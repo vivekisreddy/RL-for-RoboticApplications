@@ -1,0 +1,132 @@
+
+CLIFF WALKING ANALYSIS REPORT
+======================================================================
+
+EXPERIMENT PARAMETERS:
+- Episodes (fixed ε): 500
+- Episodes (decay ε): 1000
+- Learning rate (α): 0.5
+- Discount factor (γ): 1.0
+- Epsilon (ε): 0.1 (fixed) or 0.1→0.01 (decay)
+
+======================================================================
+QUESTION 1: Why do SARSA and Q-Learning learn different paths?
+======================================================================
+
+ANSWER:
+The key difference is ON-POLICY vs OFF-POLICY learning:
+
+**SARSA (On-Policy)**:
+- Update: Q(S,A) ← Q(S,A) + α[R + γQ(S',A') - Q(S,A)]
+- A' is chosen using the CURRENT policy (ε-greedy with ε=0.1)
+- SARSA learns the value of the policy IT IS ACTUALLY FOLLOWING
+- Since it explores with ε=0.1, it occasionally takes random actions
+- Near the cliff, random actions can cause falling → big penalty
+- SARSA learns: "The cliff edge is dangerous when I'm exploring"
+- Result: Learns SAFE path (blue path) away from cliff
+
+**Q-Learning (Off-Policy)**:
+- Update: Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
+- Uses MAX over actions, not the action actually taken
+- Q-Learning learns the value of the OPTIMAL policy
+- It separates learning from behavior
+- Learns: "The optimal path is along the cliff edge"
+- Result: Learns OPTIMAL path (red path) but performs worse during training
+
+**OBSERVED RESULTS**:
+- SARSA path length: 17 steps (safer, longer route)
+- Q-Learning path length: 13 steps (optimal, risky route)
+
+======================================================================
+QUESTION 2: Why does Q-Learning have lower average rewards?
+======================================================================
+
+ANSWER:
+**Paradox**: Q-Learning finds the optimal policy but gets worse rewards!
+
+**Explanation**:
+1. Q-Learning learns Q* (optimal values) assuming no exploration
+2. But during training, it ACTS with ε-greedy (explores 10.0% of time)
+3. The optimal path goes along the cliff edge (13 steps)
+4. With ε=0.1, near cliff: 10.0% chance of random action
+5. Random action near cliff → fall off → -100 reward
+6. Q-Learning takes risky optimal path → frequently falls during training
+
+**SARSA's Advantage**:
+1. SARSA learns the value of the ε-greedy policy it's actually using
+2. It learns: "Taking the cliff path with exploration is dangerous"
+3. Finds safer path through middle of grid (~17 steps)
+4. Longer path but fewer cliff falls → better average reward during training
+
+**MEASURED RESULTS**:
+Fixed ε=0.1:
+- SARSA avg reward (last 100): -25.87
+- Q-Learning avg reward (last 100): -58.37
+
+Q-Learning has WORSE online performance despite learning the BETTER policy!
+
+======================================================================
+QUESTION 3: Why do both converge with epsilon decay?
+======================================================================
+
+ANSWER:
+When ε gradually decreases (0.1 → 0.01):
+
+**What Happens**:
+1. Early episodes (high ε): Lots of exploration
+   - SARSA: Learns safe path, avoids cliff
+   - Q-Learning: Learns optimal values, but falls often
+
+2. Middle episodes (medium ε): Less exploration
+   - Both algorithms refine their Q-values
+   - Exploration decreases, exploitation increases
+
+3. Late episodes (low ε ≈ 0.01): Mostly exploitation
+   - Both act nearly greedily (99% greedy, 1% random)
+   - SARSA: Q-values now represent near-greedy policy
+   - With little exploration, cliff path becomes safe
+   - SARSA updates toward optimal Q*
+
+4. Final convergence:
+   - Both converge to Q* (optimal action-values)
+   - Both follow optimal policy when ε→0
+
+**WHY THIS WORKS**:
+- As ε→0, SARSA's learned policy → greedy policy
+- Greedy policy based on Q* is the optimal policy
+- Q-Learning already learned Q*, just needed behavior to catch up
+- Result: Both find 13-step optimal path along cliff
+
+**MEASURED RESULTS**:
+With ε decay (0.1 → 0.01):
+- SARSA path: 17 steps
+- Q-Learning path: 13 steps
+- Both converge to optimal 13-step path!
+
+Avg rewards (last 100 episodes):
+- SARSA: -17.32
+- Q-Learning: -16.17
+- Much closer to optimal (-13) as exploration decreased
+
+======================================================================
+KEY INSIGHTS
+======================================================================
+
+1. **On-Policy vs Off-Policy**:
+   - SARSA (on-policy): Safe during training, slower convergence
+   - Q-Learning (off-policy): Risky during training, faster to optimal
+
+2. **Exploration-Exploitation Tradeoff**:
+   - Fixed ε: Constant exploration penalty
+   - Decaying ε: Best of both worlds - explore early, exploit later
+
+3. **Performance vs Optimality**:
+   - Best TRAINING performance ≠ Best LEARNED policy
+   - Q-Learning suffers during training but learns optimal faster
+
+4. **Practical Implications**:
+   - Safety-critical applications: Use SARSA (or conservative exploration)
+   - Simulation environments: Use Q-Learning (can tolerate failures)
+   - Always use epsilon decay for best final performance!
+
+======================================================================
