@@ -10,4 +10,4 @@ EPSILON_START = 0.1
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.995  # used only if decay enabled
 
-DECAY_EPSILON = False  # change to True for part (3)
+DECAY_EPSILON = True  # change to True for getting decay over episodes, False for constant epsilon
