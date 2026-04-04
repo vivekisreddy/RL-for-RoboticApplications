@@ -12,3 +12,4 @@ def epsilon_greedy(q_table, state, epsilon):
 
 def decay_epsilon(epsilon, epsilon_min, decay_rate):
     return max(epsilon_min, epsilon * decay_rate)
+

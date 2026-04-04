@@ -1,0 +1,11 @@
+# Core RL + environment
+gymnasium[box2d]>=0.29.0
+torch>=2.0.0
+numpy>=1.24.0
+
+# Logging
+tensorboard>=2.13.0
+
+# Optional: CUDA support is handled by PyTorch itself.
+# Install the CUDA build of torch from https://pytorch.org/get-started/locally/
+# if you have an NVIDIA GPU.
